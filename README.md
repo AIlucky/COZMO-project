@@ -1,19 +1,4 @@
 # COZMO-project
-#!/usr/bin/env python3
-
-# Copyright (c) 2016 Anki, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License in the file LICENSE.txt or at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 '''Display Cozmo's camera feed back on his face (like a mirror)
 '''
@@ -41,7 +26,7 @@ Pic_Path = "C:/Users/AIlucky/Android/cozmo_sdk_examples_1.4.4/tutorials/02_cozmo
 
 #FACE DETECTION#
 
-def face_detect(imagePath):
+def face_detect(imagePath):#Nutt Chairatana 61011300
     # Get user supplied values
     cascPath = "haarcascade_frontalface_default.xml"
 
@@ -75,7 +60,7 @@ def face_detect(imagePath):
 ####################################################################################################################################
 
 
-#TAKING PICTURE"
+#TAKING PICTURE"#Vorachat Somsuay 61011359
 
 
 def cozmo_face_camera(robot: cozmo.robot.Robot):
