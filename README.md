@@ -1,4 +1,18 @@
-# COZMO-project
+#!/usr/bin/env python3
+
+# Copyright (c) 2016 Anki, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License in the file LICENSE.txt or at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 '''Display Cozmo's camera feed back on his face (like a mirror)
 '''
@@ -20,13 +34,16 @@ import cozmo
 import cv2
 
 line_token = 'Rhep2qrLKNDeSypFVLql5CKqqyAwUdI6h3KklpCr8gn' #EDIT Line address HERE
-Pic_Path = "C:/Users/AIlucky/Android/cozmo_sdk_examples_1.4.4/tutorials/02_cozmo_face/New folder/bla.png" #EDIT Picture address HERE
+Pic_Path = "C:/Users/AIlucky/Desktop/FaceDetect-master/000000.png" #EDIT Picture address HERE
+Total_Student = 60 #EDIT Number of student in classroom
+path = Pic_Path
+
 
 ########################################################################################################################
 
 #FACE DETECTION#
 
-def face_detect(imagePath):#Nutt Chairatana 61011300
+def face_detect(imagePath):
     # Get user supplied values
     cascPath = "haarcascade_frontalface_default.xml"
 
@@ -60,39 +77,23 @@ def face_detect(imagePath):#Nutt Chairatana 61011300
 ####################################################################################################################################
 
 
-#TAKING PICTURE"#Vorachat Somsuay 61011359
+#TAKING PICTURE"
 
-
-def cozmo_face_camera(robot: cozmo.robot.Robot):
-    '''Continuously display Cozmo's camera feed back on his face.'''
-    robot.camera.image_stream_enabled = True
-    robot.camera.color_image_enabled = True
-
-    print("Press CTRL-C to quit")
-
+cap = cv2.VideoCapture(0)
+def capture_pic(robot: cozmo.robot.Robot):
     while True:
-        duration_s = 0.1  # time to display each camera frame on Cozmo's face
-
-        latest_image = robot.world.latest_image
-
-        if latest_image is not None:
-            im = np.array(latest_image.raw_image)
-            
-            img = Image.fromarray(im, 'RGB')
-            img.save(Pic_Path, 'png')
-            img.show()
-
-            num = face_detect(Pic_Path)
+        _, frame = cap.read()
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            cv2.imwrite('000000.png',frame)
             break
-            
+    notifyPicture(path,robot)
 
-        time.sleep(duration_s)
+
 
 #################################################################################################################################
 
-#EXECUTING COMMAND FOR TAKING PICTURE"
-cozmo.robot.Robot.drive_off_charger_on_connect = False  # Cozmo can stay on his charger for this example
-cozmo.run_program(cozmo_face_camera)
+
 
 ######################################################################################################################################
 
@@ -105,28 +106,52 @@ def _lineNotify(file, payload):
     headers = {'Authorization':'Bearer '+token}
     return requests.post(url, headers=headers , files=file, data = payload)
 
-def notifyPicture(url):
+def notifyPicture(url,robot: cozmo.robot.Robot):
     
     import os.path
     
     if url and os.path.isfile(url):
         files = {"imageFile": open(url, "rb")}
         
+    S = Total_Student
+    Absent = S - face_detect(url)
+    
     if face_detect(url) == 1:
-        payload = {'message': "There is " + str(face_detect(url)) + " student in the classroom"}
+        if Absent == 1:
+            payload = {'message': "   Present: " + str(face_detect(url)) + "     Absent: 1"}
+            robot.say_text("There are " + str(face_detect(url)) + " student in the classroom and 1 student who's absent.").wait_for_completed()
+        elif Absent > 1:
+            payload = {'message': "   Present: " + str(face_detect(url)) + "     Absent: " + str(Absent)}
+            robot.say_text("There are " + str(face_detect(url)) + " student in the classroom and " + str(Absent) + " student who's absent.").wait_for_completed()
+        else:
+            payload = {'message': "   Present: " + str(face_detect(url)) + "     Absent: " + str(Absent)}
+            robot.say_text("There are " + str(face_detect(url)) + " student in the classroom and no student who's absent.").wait_for_completed()
+
     elif face_detect(url) == 0:
-        payload = {'message': "There is no student in the classroom"}
+        payload = {'message': "   Present: " + str(face_detect(url)) + "     Absent: " + str(Absent)}
+        robot.say_text("There is no student in the classroom.").wait_for_completed()
+        
     else:
-        payload = {'message': "There are " + str(face_detect(url)) + " students in the classroom"}
+        if Absent == 1:
+            payload = {'message': "   Present: " + str(face_detect(url)) + "     Absent: 1"}
+            robot.say_text("There are " + str(face_detect(url)) + " student in the classroom and 1 student who's absent.").wait_for_completed()
+        elif Absent > 1:
+            payload = {'message': "   Present: " + str(face_detect(url)) + "     Absent: " + str(Absent)}
+            robot.say_text("There are " + str(face_detect(url)) + " student in the classroom and " + str(Absent) + " student who's absent.").wait_for_completed()
+        else:
+            payload = {'message': "   Present: " + str(face_detect(url)) + "     Absent: " + str(Absent)}
+            robot.say_text("There are " + str(face_detect(url)) + " student in the classroom and no student who's absent.").wait_for_completed()
 
     return _lineNotify(files, payload)
 
-path = Pic_Path
 
+    notifyPicture(path,robot)
 #######################################################################################################################################
+#EXECUTING COMMAND FOR TAKING PICTURE"
+cozmo.robot.Robot.drive_off_charger_on_connect = False  # Cozmo can stay on his charger for this example
+cozmo.run_program(capture_pic)
 
+#cozmo.run_program(cozmo_face_camera)
 #EXECUTING COMMAND FOR LINE NOTIFICATION"
 #print(_lineNotify(None, {'message':"123"}))
 #to add additional message replace the string "123" with the message you want to put in
-print(notifyPicture(path))
-
